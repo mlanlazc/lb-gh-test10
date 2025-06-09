@@ -4,7 +4,7 @@ import { WithErrorHandling } from '@/components/hoc/error-handling-wrapper/error
 import { UniversalTableCard } from '@/components/building-blocks/universal-table-card/universal-table-card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LoaderError } from '@/types/loader-error';
 
 // SQL Query to retrieve organization data
@@ -151,19 +151,8 @@ export default function OrganizationsPage() {
   const fetcher = useFetcher<QueryData<OrganizationData[]>>();
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    if ('error' in loaderData) {
-      return;
-    }
-    // Initial fetch for the table data
-    fetcher.submit(
-      {
-        limit: ITEMS_PER_PAGE.toString(),
-        offset: '0',
-      },
-      { method: 'post', action: '/resources/organizations' }
-    );
-  }, [loaderData]);
+  // Removed the useEffect that was causing continuous re-fetching.
+  // The initial data is now solely provided by the loader.
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -181,6 +170,7 @@ export default function OrganizationsPage() {
     return <WithErrorHandling queryData={loaderData} render={() => null} />;
   }
 
+  // Prioritize fetcher data if available (after pagination), otherwise use loader data
   const organizationsData = fetcher.data?.data || loaderData.organizations.data;
   const organizationsCount = loaderData.organizationsCount.data?.[0]?.total || 0;
 
